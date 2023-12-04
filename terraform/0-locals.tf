@@ -8,6 +8,9 @@ locals {
     container_registry_sku = "Standard"
 
     # Kubernetes Cluster
-    kubernetes_cluster_name = ""
+    kubernetes_cluster_name = "default"
     kubernetes_cluster_node_vm_size = "Standard_B2s"
+    kubernetes_env = "dev"
+    kubernetes_name = "flask-aks1"
+
 }
