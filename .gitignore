@@ -5,6 +5,8 @@
 
 # Ignore .terraform directory
 .terraform/
+terraform/.terraform.lock.hcl
+**.txt
 
 # Ignore any local override files
 override.tf
