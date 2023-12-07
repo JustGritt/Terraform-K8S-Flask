@@ -24,7 +24,7 @@ Ce projet déploie une application Flask sur un cluster Kubernetes en utilisant 
     Naviguez vers le répertoire terraform et initialisez votre configuration Terraform :
 
     ```bash
-    cd terraform && terraform init
+    terraform init
     ```
 
 3. **Planification de l'infrastructure**
@@ -35,8 +35,6 @@ Ce projet déploie une application Flask sur un cluster Kubernetes en utilisant 
     terraform plan
     ```
 
-    Confirmez le plan en tapant `yes`.
-
 4. **Déploiement de l'infrastructure**
 
     Appliquez votre configuration Terraform :
@@ -45,15 +43,17 @@ Ce projet déploie une application Flask sur un cluster Kubernetes en utilisant 
     terraform apply
     ```
 
-5. **Connexion au Azure Container Registry (ACR)**
+   Confirmez le plan en tapant `yes`.
+   
+6. **Connexion au Azure Container Registry (ACR)**
 
     Remplacez `<acr-name>` par le nom de votre Azure Container Registry et connectez-vous :
 
     ```bash
-    az acr login --name <acr-name>
+    az acr login --name flaskregistryesgids5iw3
     ```
 
-6. **Construction et Push de l'image Docker**
+7. **Construction et Push de l'image Docker**
 
     Remplacez `flaskregistryesgids5iw3` par le nom de votre registre de conteneurs si besoin.
 
@@ -64,29 +64,30 @@ Ce projet déploie une application Flask sur un cluster Kubernetes en utilisant 
     docker push flaskregistryesgids5iw3.azurecr.io/flask-app:latest
     ```
 
-    Pour l'architecture arm64 :
+    Pour les utilisateurs sous arm (apple silicon):
 
     ```bash
+    docker buildx create --use
     docker buildx build --platform linux/arm64 -t flaskregistryesgids5iw3.azurecr.io/flask-app:latest --push .
     ```
 
-7. **Connexion au Azure Kubernetes Service (AKS)**
+8. **Connexion au Azure Kubernetes Service (AKS)**
 
     Remplacez `<cluster name>` et `<resource group name>` par le nom de votre cluster AKS et le nom de votre groupe de ressources :
 
     ```bash
-    az aks get-credentials --overwrite-existing -n <cluster name> -g <resource group name>
+    az aks get-credentials --overwrite-existing -n flask-aks1 -g rg-ESGI-atan
     ```
 
-8. **Déploiement de l'application**
-
+9. **Déploiement de l'application**
+   
     Appliquez le déploiement Kubernetes :
 
     ```bash
     kubectl apply -f kubernetes/deployment.yaml
     ```
 
-9. **Vérification du déploiement**
+11. **Vérification du déploiement**
 
     Obtenez l'IP publique du load balancer :
 
@@ -102,14 +103,23 @@ Ce projet déploie une application Flask sur un cluster Kubernetes en utilisant 
     curl http://<external ip>
     ```
 
-10. **Nettoyage**
+12. **Nettoyage**
 
     Lorsque vous avez terminé, vous pouvez supprimer les ressources que vous avez créées avec les commandes suivantes :
+
+
+    Pour supprimer votre deployment kubernetes :
+
+    ```bash
+    kubectl delete -f kubernetes/deployment.yaml
+    ```
+    
+    Naviguez vers le répertoire terraform et initialisez votre configuration Terraform :
 
     Pour supprimer l'infrastructure Terraform :
 
     ```bash
-    cd terraform && terraform destroy
+    terraform destroy
     ```
 
     Confirmez la destruction en tapant `yes`.
