@@ -4,7 +4,7 @@ locals {
     region = "francecentral"
 
     # Container Registry
-    container_registry_name = "flaskregistryesgi5iw3"
+    container_registry_name = "flaskregistryesgids5iw3"
     container_registry_sku = "Standard"
 
     # Kubernetes Cluster
