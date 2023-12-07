@@ -12,5 +12,4 @@ locals {
     kubernetes_cluster_node_vm_size = "Standard_B2s"
     kubernetes_env = "dev"
     kubernetes_name = "flask-aks1"
-
 }
