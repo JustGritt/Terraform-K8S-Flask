@@ -1,55 +1,121 @@
+# deployment.yaml
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: flask
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  namespace: flask
+data:
+  REDIS_HOST: redis-service.flask.svc.cluster.local
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: flask-app
+  namespace: flask
+  labels:
+    app: flask
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: flask-app
+      app: flask
   template:
     metadata:
       labels:
-        app: flask-app
+        app: flask
     spec:
       containers:
-        - name: flask-app
-          image: flaskregistryesgi5iw3.azurecr.io/flask-app:latest
-          workingDir: /code
+        - name: flask
+          image: flaskregistryesgids5iw3.azurecr.io/flask-app:latest
           ports:
             - containerPort: 8000
-          volumeMounts:
-            - name: code-volume
-              mountPath: /code
-      volumes:
-        - name: code-volume
-          emptyDir: {}
+          env:
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-config
+                  key: REDIS_HOST
+            - name: REDIS_PORT
+              value: "6379"
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: flask-app
+  name: flask-app-service
+  namespace: flask
 spec:
   selector:
-    app: flask-app
+    app: flask
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 5000
+      port: 8000
+      targetPort: 8000
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: flask
+  labels:
+    app: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:latest
+          ports:
+            - containerPort: 6379
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  namespace: flask
+spec:
+  selector:
+    app: redis
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379
+  type: ClusterIP
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: flask-app-ingress
+  name: flask-ingress
+  namespace: flask
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-    - host: 20.19.64.92.nip.io
+    - host: ''
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: flask-app
+                name: flask-app-service
                 port:
-                  number: 80
+                  number: 8000
